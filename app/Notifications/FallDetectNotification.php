@@ -14,13 +14,21 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
 {
     use Queueable;
     public User $patient;
+    public $latitude;
+    public $longitude;
+    public $location;
+    public $severity;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $patient)
+    public function __construct($data)
     {
-        $this->patient = $patient;
+        $this->patient = $data['patient'];
+        $this->latitude = $data['latitude'];
+        $this->longitude = $data['longitude'];
+        $this->location = $data['location'];
+        $this->severity = $data['severity'];
     }
 
     /**
@@ -44,7 +52,13 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
             // I want this message to navigate to the patient's profile in flutter app, how to do that?
             'url' => env("APP_URL")."/api/v1/patients/falls/{$this->patient->id}",
             'icon' => 'https://via.placeholder.com/150',
-            'message' => "{$this->patient->name} has fall down!"
+            'message' => "{$this->patient->name} has fall down!",
+            'actions' => [
+                "latitude" => $this->latitude,
+                "longitude" => $this->longitude,
+                "location" => $this->location,
+                "severity" => $this->severity,
+            ]
         ]);
     }
 
@@ -58,7 +72,13 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
         return [
             'title' => 'Fall Detected',
             'patient' => $this->patient,
-            'message' => "{$this->patient->name} has fall down!"
+            'message' => "{$this->patient->name} has fall down!",
+            'actions' => [
+                "latitude" => $this->latitude,
+                "longitude" => $this->longitude,
+                "location" => $this->location,
+                "severity" => $this->severity,
+            ]
         ];
     }
 

@@ -3,22 +3,23 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Caregiver;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')->stateless()->redirect();
     }
 
     public function handleGoogleCallback(Request $request)
     {
-        $user = Socialite::driver('google')->user();
+        $user = Socialite::driver('google')->stateless()->user();
 
-        $userExisted = User::where('provider_id', $user->id)->first();
+        $userExisted = Caregiver::where('provider_id', $user->id)->first();
 
         if( $userExisted ) {
             $token = $userExisted->createToken($request->userAgent(), ['*'])->plainTextToken;
@@ -30,7 +31,7 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
             ]);
         }else {
-            $newUser = User::create([
+            $newUser = Caregiver::create([
                 'name' => $user->name,
                 'phone' => "+20", // How to get the phone number from google?
                 'email' => $user->email,
@@ -40,6 +41,9 @@ class AuthController extends Controller
             ]);
 
             $token = $newUser->createToken($request->userAgent(), ['*'])->plainTextToken;
+
+            // verify the user
+            $newUser->markEmailAsVerified();
 
             return response()->json([
                 'message' => 'Logged in',

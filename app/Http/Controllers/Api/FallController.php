@@ -56,13 +56,21 @@ class FallController extends Controller
         $imageUrl = $map->make();
 
         // Push Fall Detect Notification Event
-        event(new FallDetectNotification($request->user()));
-        event(new FollowNotification("He is Following you."));
+        event(new FallDetectNotification([
+            'patient' => $request->user(),
+            'location' => $request->location,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'severity' => $request->severity,
+        ]));
+        
+        // test (worked)
+        // event(new FollowNotification("He is Following you."));
         
         return Fall::create([
             ...$request->all(),
             "user_id" => $request->user()->id,
-            "location" => $imageUrl
+            // "location" => $imageUrl
         ]);
     }
 

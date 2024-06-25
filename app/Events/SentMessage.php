@@ -13,9 +13,11 @@ class SentMessage implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $sender_id;
-    public $receiver_id;
+    public $sender;
+    public $receiver;
     public string $message;
+    public $date;
+    public $time;
 
     /**
      * Create a new event instance.
@@ -23,8 +25,11 @@ class SentMessage implements ShouldBroadcast
     public function __construct($data)
     {
         $this->message = $data['message'];
-        $this->sender_id = $data['sender_id'];
-        $this->receiver_id = $data['receiver_id'];
+        $this->sender = $data['sender'];
+        $this->receiver = $data['receiver'];
+
+        $this->date = date('Y-m-d');
+        $this->time = date('H:i:s');
     }
 
     /**
@@ -34,7 +39,7 @@ class SentMessage implements ShouldBroadcast
      */
     public function broadcastOn(): Channel
     {
-        return new PrivateChannel("chat.{$this->sender_id}.{$this->receiver_id}");
+        return new PrivateChannel("chat.{$this->sender->id}.{$this->receiver->id}");
     }
 
     public function broadcastAs(): string

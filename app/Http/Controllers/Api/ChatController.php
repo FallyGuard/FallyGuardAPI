@@ -8,6 +8,7 @@ use App\Models\Caregiver;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ChatController extends Controller
 {
@@ -19,7 +20,12 @@ class ChatController extends Controller
 
         // Check if Receiver exists
         $receiver = $request->user()->role === 'caregiver' ? User::class : Caregiver::class;
-        $receiver = $receiver::find($receiver_id);
+        $receiver = $receiver::find($receiver_id, [
+            'id',
+            'name',
+            'photo',
+        ]);
+        
         if (!$receiver) {
             return response()->json(['message' => 'Receiver not found'], 404);
         }
@@ -28,14 +34,23 @@ class ChatController extends Controller
             'message' => $validated['message'],
             'sender_id' => $request->user()->id,
             'sender_type' => $request->user()->role,
-            'receiver_id' => $receiver_id,
+            'receiver_id' => +$receiver_id,
             'receiver_type' => $request->user()->role === 'caregiver' ? 'patient' : 'caregiver',
         ]);
 
         // Optionally, broadcast the message event
-        broadcast(new SentMessage($message))->toOthers();
+        broadcast(new SentMessage([
+            ...$message->toArray(),
+            'sender' => $request->user(),
+            'receiver' => $receiver,
 
-        return response()->json(['message' => $message], 201);
+        ]))->toOthers();
+
+        return response()->json(['message' => [
+            ...$message->toArray(),
+            'sender' => $request->user(),
+            'receiver' => $receiver,
+        ]], 201);
     }
 
     public function getMessagesOfOtherUser(Request $request, $other_id)
