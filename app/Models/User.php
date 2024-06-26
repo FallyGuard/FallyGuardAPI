@@ -76,13 +76,13 @@ class User extends Authenticatable
     public static function validators() {
         return [
             'name' => 'required|string|max:255',
-            "family_name" => "required|string|max:255",
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|confirmed|min:8',
+            'password' => 'required|string|min:8',
             "date_of_birth" => "required|date",
             'phone' => 'required|string|regex:/^01[0-2]{1}[0-9]{8}$/',
-            "country" => "required|string|max:255",
-            'address' => 'required|string|max:255',
+            "family_name" => "nullable|string|max:255",
+            "country" => "nullable|string|max:255",
+            'address' => 'nullable|string|max:255',
             'photo' => 'sometimes|required|file|max:255',
         ];
     }
