@@ -29,4 +29,12 @@ class EmergencyContact extends Model
         "created_at",
         "updated_at",
     ];
+
+    /**
+     * Get the user that owns the EmergencyContact
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -8,24 +8,25 @@ use Illuminate\Http\Request;
 
 class EmergencyContactController extends Controller
 {
+    public function index(Request $request) {
+        return response()->json([
+            "data" => $request->user()->contacts()
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-
-            'phone' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-
-            "address" => "required|string|max:255",
-
-            "relationship" => "required|string|max:255",
+            'name' => 'required',
+            "relationship" => "required",
+            'phone' => 'required',
+            'email' => 'required|email',
+            'address' => 'required',
         ]);
 
         $emergency_contact = EmergencyContact::create([
-            ...$request->except(["first_name", "last_name"]),
+            ...$request->all(),
             "user_id" => $request->user()->id,
-            "name" => "{$request->first_name} {$request->last_name}"
         ]);
 
         return response()->json([
@@ -44,13 +45,11 @@ class EmergencyContactController extends Controller
     public function update(Request $request, EmergencyContact $emergency_contact)
     {
         $request->validate([
-            'first_name' => 'sometimes|required|string|max:255',
-            'last_name' => 'sometimes|required|string|max:255',
-
-            'phone' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|max:255',
-
-            "relationship" => "sometimes|required|string|max:255",
+            'name' => 'sometimes|required',
+            "relationship" => "sometimes|required",
+            'phone' => 'sometimes|required',
+            'email' => 'sometimes|required|email',
+            'address' => 'sometimes|required',
         ]);
 
         foreach($request->all() as $key => $value) {
