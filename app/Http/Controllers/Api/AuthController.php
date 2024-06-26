@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
         return Socialite::driver('google')->stateless()->redirect();
     }
@@ -18,8 +18,10 @@ class AuthController extends Controller
     public function handleGoogleCallback(Request $request)
     {
         $user = Socialite::driver('google')->stateless()->user();
+        $model = Caregiver::class;
 
-        $userExisted = Caregiver::where('provider_id', $user->id)->first();
+        // depend on $type, we will check if the user is a caregiver or a patient
+        $userExisted = $model::where('provider_id', $user->id)->first();
 
         if( $userExisted ) {
             $token = $userExisted->createToken($request->userAgent(), ['*'])->plainTextToken;
@@ -31,7 +33,7 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
             ]);
         }else {
-            $newUser = Caregiver::create([
+            $newUser = $model::create([
                 'name' => $user->name,
                 'phone' => "+20", // How to get the phone number from google?
                 'email' => $user->email,

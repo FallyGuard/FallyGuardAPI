@@ -39,6 +39,11 @@ class SearchController extends Controller
                     $query->whereRaw("ST_Distance_Sphere(point(longitude, latitude), point(?, ?)) <= ?", [$longitude, $value, $radius * 1000]);
                 }
             },
+            "patient_name" => function($query, $value) {
+                $query->whereHas('user', function($query) use ($value) {
+                    $query->where('name', 'LIKE', '%' . $value . '%');
+                });
+            },
         ];
 
         // Apply the filters based on the request input

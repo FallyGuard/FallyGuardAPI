@@ -95,8 +95,10 @@ Route::middleware('check.accept')->group(function () {
 
         // Logout
         Route::post('auth/logout', [\App\Services\AuthService::class, 'logout']);
+        
         // Emergency Contacts
         Route::apiResource('emergency-contacts', EmergencyContactController::class);
+        
         // Falls
         Route::apiResource('falls', FallController::class);
         Route::get('falls/{id}/user', [FallController::class, 'user']);

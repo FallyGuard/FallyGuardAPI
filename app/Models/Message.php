@@ -31,6 +31,7 @@ class Message extends Model
             'receiver_type' => $this->receiver_type,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+
         ];
     }
 }
