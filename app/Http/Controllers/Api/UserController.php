@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 
 use App\Http\Resources\User\UserCollection;
 use App\Http\Resources\User\UserResource;
-use App\Models\Caregiver;
 use App\Models\User;
 
-use App\Notifications\FollowNotification;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 
@@ -20,10 +18,6 @@ class UserController extends Controller
     public function __construct(){
         $this->middleware('role:patient', [
             'only' => ['me', 'update']
-        ]);
-
-        $this->middleware('check.token:Patient', [
-            'only' => ['register', 'login']
         ]);
         
         $this->authService = new AuthService(new User());

@@ -10,7 +10,7 @@ class EmergencyContactController extends Controller
 {
     public function index(Request $request) {
         return response()->json([
-            "data" => $request->user()->contacts()
+            "data" => EmergencyContact::all()->load('user'),
         ]);
     }
 

@@ -21,7 +21,6 @@ class CaregiverController extends Controller
 
     public function __construct(){
         $this->middleware('role:caregiver', ['except' => ['register', 'login', 'verifyEmail', 'resendOtp', 'forgotPassword', 'resetPassword']]);    
-        $this->middleware('check.token:Caregiver', ['only' => ['register', 'login']]);
         $this->middleware('verified', ['except' => ['register', 'login', 'verifyEmail', 'resendOtp', 'forgotPassword', 'resetPassword']]);
 
         // $this->authService = new AuthService(Caregiver::class);

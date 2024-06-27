@@ -105,7 +105,7 @@ class AuthService implements AuthenticationInterface
         // current user
         $User = $this->user;
         $UserTable = $User->getTable();
-        
+
         $request->validate([
             'email' => "required|email|exists:{$UserTable},email",
             'otp' => 'required|string|max:4',
@@ -113,7 +113,7 @@ class AuthService implements AuthenticationInterface
 
         // // user owns the email
         // $user = DB::table($UserTable)->where('email', $request->email)->first();
-        
+
         if (!(new Otp())->validate($request->email, $request->otp)->status) {
             return response()->json([
                 'errors' => [
@@ -220,5 +220,24 @@ class AuthService implements AuthenticationInterface
     public function getRoleAttribute()
     {
         return $this->user->role;
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate($this->model::validators());
+
+        $User = $this->user;
+        $User->update($request->except('photo'));
+
+        if ($request->hasFile('photo')) {
+            $imageUrl = Cloudinary::upload($request->file('photo')->getRealPath())->getSecurePath();
+            $User->photo = $imageUrl;
+            $User->save();
+        }
+
+        return response()->json([
+            'message' => "{$this->user->role} updated successfully.",
+            'data' => $User->toArray(),
+        ]);
     }
 }

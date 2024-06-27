@@ -52,16 +52,19 @@ class Caregiver extends Authenticatable
          */
     }
 
-    public function getRoleAttribute() {
+    public function getRoleAttribute()
+    {
         return "caregiver";
     }
 
-    public function toArray() {
+    public function toArray()
+    {
         return new CaregiverResource($this);
     }
 
     // The Validators for the Caregiver
-    public static function validators() {
+    public static function validators()
+    {
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:caregivers,email',
@@ -70,6 +73,22 @@ class Caregiver extends Authenticatable
             "date_of_birth" => "sometimes|required|date",
             'phone' => 'required|string|regex:/^01[0-2]{1}[0-9]{8}$/',
             "gender" => ["required", new GenderValidateRule],
+            "country" => "sometimes|required|string|max:255",
+            'address' => 'sometimes|required|string|max:255',
+            'photo' => 'sometimes|required|file',
+        ];
+    }
+
+    public static function updateValidators()
+    {
+        return [
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|email|unique:caregivers,email',
+            // checks if the password contains at least one lowercase letter, one uppercase letter, and one number
+            'password' => 'sometimes|required|string|big_password|min:8',
+            "date_of_birth" => "sometimes|required|date",
+            'phone' => 'sometimes|required|string|regex:/^01[0-2]{1}[0-9]{8}$/',
+            "gender" => ["sometimes", 'required', new GenderValidateRule],
             "country" => "sometimes|required|string|max:255",
             'address' => 'sometimes|required|string|max:255',
             'photo' => 'sometimes|required|file',

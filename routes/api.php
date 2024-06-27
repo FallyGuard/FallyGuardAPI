@@ -49,7 +49,7 @@ Route::middleware('check.accept')->group(function () {
                 Route::post('login', [\App\Http\Controllers\Api\UserController::class, 'login']);
                 // Logout a user
                 Route::withoutMiddleware('guest:sanctum')->middleware('auth:sanctum')->post('logout', [\App\Http\Controllers\Api\UserController::class, 'logout']);
-                
+
                 // Verify Email
                 Route::post('verify-email', [\App\Http\Controllers\Api\UserController::class, 'verifyEmail']);
                 Route::post('resend-code', [\App\Http\Controllers\Api\UserController::class, 'resendOtp']);
@@ -60,7 +60,7 @@ Route::middleware('check.accept')->group(function () {
             });
 
             // Social Auth
-            Route::prefix('auth')->group(function() {
+            Route::prefix('auth')->group(function () {
                 Route::get('google', [\App\Http\Controllers\Api\AuthController::class, 'redirectToGoogle']);
                 Route::get('google/callback', [\App\Http\Controllers\Api\AuthController::class, 'handleGoogleCallback']);
             });
@@ -95,10 +95,8 @@ Route::middleware('check.accept')->group(function () {
 
         // Logout
         Route::post('auth/logout', [\App\Services\AuthService::class, 'logout']);
-        
         // Emergency Contacts
         Route::apiResource('emergency-contacts', EmergencyContactController::class);
-        
         // Falls
         Route::apiResource('falls', FallController::class);
         Route::get('falls/{id}/user', [FallController::class, 'user']);
@@ -107,7 +105,7 @@ Route::middleware('check.accept')->group(function () {
         Route::group([
             'prefix' => 'chat',
             'middleware' => 'auth:sanctum',
-        ], function() {
+        ], function () {
             Route::get('/{other_id}', [ChatController::class, 'getMessagesOfOtherUser']);
             Route::post('/{receiver_id}', [ChatController::class, 'sendMessage']);
 
@@ -157,6 +155,7 @@ Route::middleware('check.accept')->group(function () {
             Route::prefix('me')->group(function () {
                 Route::get('/', [App\Http\Controllers\Api\CaregiverController::class, 'me']);
                 Route::post('logout', [App\Http\Controllers\Api\CaregiverController::class, 'logout']);
+                Route::patch('update', [App\Http\Controllers\Api\CaregiverController::class, 'update']);
 
                 Route::get('patients', [App\Http\Controllers\Api\CaregiverController::class, 'patients']);
                 Route::get('patients/{id}', [App\Http\Controllers\Api\CaregiverController::class, 'patient']);

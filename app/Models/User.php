@@ -46,20 +46,24 @@ class User extends Authenticatable
     ];
 
     // Get All Emergency Contacts which belongs to the user
-    public function contacts() {
+    public function contacts()
+    {
         return $this->hasMany(EmergencyContact::class);
     }
 
     // Get All Falls which belongs to the user
-    public function falls() {
+    public function falls()
+    {
         return $this->hasMany(Fall::class);
     }
 
-    public function caregiver() {
+    public function caregiver()
+    {
         return $this->belongsToMany(Caregiver::class);
     }
 
-    public function getRoleAttribute() {
+    public function getRoleAttribute()
+    {
         return "patient";
     }
 
@@ -68,12 +72,14 @@ class User extends Authenticatable
     //     return $this->hasMany(Notification::class);
     // }
 
-    public function toArray() {
+    public function toArray()
+    {
         return new UserResource($this);
     }
 
     // The Validators for the User
-    public static function validators() {
+    public static function validators()
+    {
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -83,6 +89,21 @@ class User extends Authenticatable
             "family_name" => "nullable|string|max:255",
             "country" => "nullable|string|max:255",
             'address' => 'nullable|string|max:255',
+            'photo' => 'sometimes|required|file|max:255',
+        ];
+    }
+
+    public static function updateValidators()
+    {
+        return [
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|email|unique:users,email',
+            'password' => 'sometimes|required|string|min:8',
+            "date_of_birth" => "sometimes|required|date",
+            'phone' => 'sometimes|required|string|regex:/^01[0-2]{1}[0-9]{8}$/',
+            "family_name" => "sometimes|required|string|max:255",
+            "country" => "sometimes|required|string|max:255",
+            'address' => 'sometimes|required|string|max:255',
             'photo' => 'sometimes|required|file|max:255',
         ];
     }
