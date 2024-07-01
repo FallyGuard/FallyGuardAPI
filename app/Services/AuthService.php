@@ -35,7 +35,9 @@ class AuthService implements AuthenticationInterface
         $User = $this->model::make($request->except('photo')); // make:: return a new instance of the model
 
         if ($request->hasFile('photo')) {
-            $imageUrl = Cloudinary::upload($request->file('photo')->getRealPath())->getSecurePath();
+            $imageUrl = Cloudinary::upload($request->file('photo')->getRealPath(), [
+                'folder' => $this->user->role,
+            ])->getSecurePath();
             $User->photo = $imageUrl;
         }
 
@@ -91,6 +93,9 @@ class AuthService implements AuthenticationInterface
             );
         }
 
+        // Remove all tokens registered in database if exist
+        $User->tokens()->delete();
+
         // Create token
         $token = $User->createToken($request->device_name ?? $request->userAgent(), ['*'])->plainTextToken;
 
@@ -111,9 +116,6 @@ class AuthService implements AuthenticationInterface
             'otp' => 'required|string|max:4',
         ]);
 
-        // // user owns the email
-        // $user = DB::table($UserTable)->where('email', $request->email)->first();
-
         if (!(new Otp())->validate($request->email, $request->otp)->status) {
             return response()->json([
                 'errors' => [
@@ -124,10 +126,10 @@ class AuthService implements AuthenticationInterface
             ], 400);
         }
 
-        $this->model::where('email', $request->email)->update(['email_verified_at' => now()]);
+        // Remove All Old OTPs in database
+        DB::table('otps')->where('email', $request->email)->delete();
 
-        // $user->email_verified_at = now();
-        // $user->save(); #User is not an instance of the model to use `save` method
+        $this->model::where('email', $request->email)->update(['email_verified_at' => now()]);
 
         return response()->json([
             'status_message' => 'success',
@@ -212,6 +214,9 @@ class AuthService implements AuthenticationInterface
             $user->notify(new EmailVerificationNotification());
         }
 
+        // Remove All Old OTPs in database
+        DB::table('otps')->where('email', $request->email)->delete();
+
         return response()->json([
             'message' => 'OTP sent to your email.',
         ]);
@@ -220,24 +225,5 @@ class AuthService implements AuthenticationInterface
     public function getRoleAttribute()
     {
         return $this->user->role;
-    }
-
-    public function update(Request $request)
-    {
-        $request->validate($this->model::validators());
-
-        $User = $this->user;
-        $User->update($request->except('photo'));
-
-        if ($request->hasFile('photo')) {
-            $imageUrl = Cloudinary::upload($request->file('photo')->getRealPath())->getSecurePath();
-            $User->photo = $imageUrl;
-            $User->save();
-        }
-
-        return response()->json([
-            'message' => "{$this->user->role} updated successfully.",
-            'data' => $User->toArray(),
-        ]);
     }
 }

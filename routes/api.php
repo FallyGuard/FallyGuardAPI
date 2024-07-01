@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\FallController;
 
 use App\Http\Resources\User\UserResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -139,6 +140,8 @@ Route::middleware('check.accept')->group(function () {
 
             Route::prefix('me')->group(function () {
                 Route::get('/', [App\Http\Controllers\Api\UserController::class, 'me']); // Get the current user
+                Route::patch('/', [App\Http\Controllers\Api\UserController::class, 'update']); // Update the current user
+                Route::delete('/', [App\Http\Controllers\Api\UserController::class, 'delete']); // Delete the current user
                 Route::post('logout', [App\Http\Controllers\Api\UserController::class, 'logout']); // Logout a user
             });
 
@@ -154,8 +157,10 @@ Route::middleware('check.accept')->group(function () {
 
             Route::prefix('me')->group(function () {
                 Route::get('/', [App\Http\Controllers\Api\CaregiverController::class, 'me']);
+                Route::patch('/', [App\Http\Controllers\Api\CaregiverController::class, 'update']);
+                Route::delete('/', [App\Http\Controllers\Api\CaregiverController::class, 'delete']);
+
                 Route::post('logout', [App\Http\Controllers\Api\CaregiverController::class, 'logout']);
-                Route::patch('update', [App\Http\Controllers\Api\CaregiverController::class, 'update']);
 
                 Route::get('patients', [App\Http\Controllers\Api\CaregiverController::class, 'patients']);
                 Route::get('patients/{id}', [App\Http\Controllers\Api\CaregiverController::class, 'patient']);
@@ -166,5 +171,12 @@ Route::middleware('check.accept')->group(function () {
                 Route::get('patients/{id}/falls', [App\Http\Controllers\Api\CaregiverController::class, 'falls']);
             });
         });
+    });
+
+    // Notification
+    Route::middleware("auth:sanctum")->get('notifications', function (Request $request) {
+        return response()->json([
+            'data' => DB::table('notification')->get(),
+        ]);
     });
 });

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Caregiver;
 use App\Models\Message;
 use App\Models\User;
+use App\Notifications\ChatNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -35,18 +36,26 @@ class ChatController extends Controller
         ]);
 
         // Optionally, broadcast the message event
-        broadcast(new SentMessage([
+        broadcast(new ChatNotification([
             ...$message->toArray(),
             'sender' => $request->user(),
             'receiver' => $receiver,
 
         ]))->toOthers();
 
-        return response()->json(['message' => [
+        event(new SentMessage([
             ...$message->toArray(),
             'sender' => $request->user(),
             'receiver' => $receiver,
-        ]], 201);
+        ]));
+
+        return response()->json([
+            'message' => [
+                ...$message->toArray(),
+                'sender' => $request->user(),
+                'receiver' => $receiver,
+            ]
+        ], 201);
     }
 
     public function getMessagesOfOtherUser(Request $request, $other_id)
@@ -80,7 +89,7 @@ class ChatController extends Controller
     public function latestChats(Request $request)
     {
         $currentUserId = auth()->id();
-        
+
         $chats = DB::table('messages')
             ->select('sender_id', 'sender_type', 'receiver_id', 'receiver_type', 'message', 'created_at')
             ->where('sender_id', $currentUserId)
@@ -96,7 +105,7 @@ class ChatController extends Controller
                 $receiver = $chat->receiver_type === 'caregiver'
                     ? Caregiver::find($chat->receiver_id)->only(['id', 'name', 'photo'])
                     : User::find($chat->receiver_id)->only(['id', 'name', 'photo']);
-                
+
 
                 $info = auth()->id() === $chat->sender_id ? $receiver : $sender;
 
@@ -111,10 +120,20 @@ class ChatController extends Controller
                     'created_at' => $chat->created_at,
                 ];
             });
-        
-    return response()->json([
-        'status' => 'success',
-        'chats' => $chats,
-    ]);
+
+        // Group/Map Chats between same users (sender, receiver)
+        $chats = $chats->groupBy('url')->map(function ($chat) {
+            return [
+                'message' => $chat->first()['message'],
+                'between' => $chat->first()['between'],
+                'info' => $chat->first()['info'],
+                'created_at' => $chat->first()['created_at'],
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'chats' => $chats,
+        ]);
     }
 }

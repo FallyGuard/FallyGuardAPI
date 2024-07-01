@@ -7,7 +7,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class FallDetectNotification extends Notification implements ShouldQueue, ShouldBroadcast
@@ -18,6 +17,7 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
     public $longitude;
     public $location;
     public $severity;
+    public $chat_with;
 
     /**
      * Create a new notification instance.
@@ -29,6 +29,7 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
         $this->longitude = $data['longitude'];
         $this->location = $data['location'];
         $this->severity = $data['severity'];
+        $this->chat_with = "/api/v1/chat/{$this->patient->id}";
     }
 
     /**
@@ -50,8 +51,9 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
             'title' => 'Fall Detected',
             'patient' => $this->patient,
             // I want this message to navigate to the patient's profile in flutter app, how to do that?
-            'url' => env("APP_URL")."/api/v1/patients/falls/{$this->patient->id}",
-            'icon' => 'https://via.placeholder.com/150',
+            'url' => env("APP_URL") . "/api/v1/patients/{$this->patient->id}",
+            'chat_with' => $this->chat_with,
+            'icon' => 'https://res.cloudinary.com/dpr9selqa/image/upload/v1719844313/w12hgojqlwfz2o6l58fw.png',
             'message' => "{$this->patient->name} has fall down!",
             'actions' => [
                 "latitude" => $this->latitude,
@@ -72,6 +74,10 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
         return [
             'title' => 'Fall Detected',
             'patient' => $this->patient,
+            // I want this message to navigate to the patient's profile in flutter app, how to do that?
+            'url' => env("APP_URL") . "/api/v1/patients/{$this->patient->id}",
+            'chat_with' => $this->chat_with,
+            'icon' => 'https://res.cloudinary.com/dpr9selqa/image/upload/v1719844313/w12hgojqlwfz2o6l58fw.png',
             'message' => "{$this->patient->name} has fall down!",
             'actions' => [
                 "latitude" => $this->latitude,
@@ -82,11 +88,13 @@ class FallDetectNotification extends Notification implements ShouldQueue, Should
         ];
     }
 
-    public function broadcastOn() {
+    public function broadcastOn()
+    {
         return ['fall-channel'];
     }
 
-    public function broadcastAs() {
+    public function broadcastAs()
+    {
         return 'fall-event';
     }
 }

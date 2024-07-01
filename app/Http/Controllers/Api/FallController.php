@@ -7,14 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Fall;
 use App\Notifications\FallDetectNotification;
 use App\Notifications\FollowNotification;
-use Illuminate\Http\Request; 
+use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\DB;
 use Mastani\GoogleStaticMap\GoogleStaticMap as StaticMap;
 
 
 class FallController extends Controller
 {
-    public function __construct(){
+    public function __construct()
+    {
         $this->middleware('role:patient', ['except' => ['index', 'show', "user"]]);
     }
     /**
@@ -55,6 +57,22 @@ class FallController extends Controller
 
         $imageUrl = $map->make();
 
+        // Check if the patient's fall is already registered in the database
+        $fall = Fall::where('user_id', $request->user()->id)
+            ->where('location', $request->location)
+            ->where('latitude', $request->latitude)
+            ->where('longitude', $request->longitude)
+            ->first();
+
+        if ($fall) {
+            // notify the patient that the fall is already registered
+            // avoiding duplicate fall events
+            return response()->setStatusCode(204);
+        }
+
+        // check if different coordinates if so, delete old fall event
+        $fall->delete();
+
         // Push Fall Detect Notification Event
         event(new FallDetectNotification([
             'patient' => $request->user(),
@@ -63,14 +81,25 @@ class FallController extends Controller
             'longitude' => $request->longitude,
             'severity' => $request->severity,
         ]));
-        
+
+        // Store Fall Notification
+        DB::insert('insert into notification (user_id, type, title, content, created_at, updated_at) values (?, ?, ?, ?, ?, ?)', [
+            $request->user()->id,
+            "fall",
+            'Fall Detected',
+            "{$request->user()->name} has fall down!",
+            now(),
+            now(),
+        ]);
+
         // test (worked)
         // event(new FollowNotification("He is Following you."));
-        
+
         return Fall::create([
             ...$request->all(),
             "user_id" => $request->user()->id,
             // "location" => $imageUrl
+            "location" => "https://res.cloudinary.com/dpr9selqa/image/upload/v1719844313/w12hgojqlwfz2o6l58fw.png"
         ]);
     }
 

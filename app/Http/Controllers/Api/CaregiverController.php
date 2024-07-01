@@ -19,8 +19,9 @@ class CaregiverController extends Controller
 
     private $authService;
 
-    public function __construct(){
-        $this->middleware('role:caregiver', ['except' => ['register', 'login', 'verifyEmail', 'resendOtp', 'forgotPassword', 'resetPassword']]);    
+    public function __construct()
+    {
+        $this->middleware('role:caregiver', ['except' => ['register', 'login', 'verifyEmail', 'resendOtp', 'forgotPassword', 'resetPassword']]);
         $this->middleware('verified', ['except' => ['register', 'login', 'verifyEmail', 'resendOtp', 'forgotPassword', 'resetPassword']]);
 
         // $this->authService = new AuthService(Caregiver::class);
@@ -40,8 +41,8 @@ class CaregiverController extends Controller
         return $this->authService->register($request);
     }
 
-    public function login(Request $request) {
-        
+    public function login(Request $request)
+    {
         // Login Caregiver - Validate request
         return $this->authService->login($request);
     }
@@ -83,23 +84,25 @@ class CaregiverController extends Controller
 
     public function update(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:caregivers,email,' . $request->user()->id,
-            'password' => 'sometimes|required|string|big_password|min:8',
-            "date_of_birth" => "sometimes|required|date",
-            'phone' => 'sometimes|required|string|regex:/^01[0-2]{1}[0-9]{8}$/',
-            "photo" => "sometimes|required|file"
-        ]);
+        $validated = $request->validate($request->user()->updateValidators());
 
         $caregiver = $request->user();
 
-        $caregiver->fill($request->except('photo'));
+        $caregiver->fill($validated);
 
         if ($request->hasFile('photo')) {
             // First delete the old photo from cloudinary
-            Cloudinary::destroy($caregiver->photo);
-            $imageUrl = Cloudinary::upload($request->file('photo')->getRealPath())->getSecurePath();
+            // Why this error: "Missing required parameter - public_id?
+            // - The error is because the photo field is empty, so it's trying to delete a photo that doesn't exist
+
+            if ($caregiver->photo) {
+                $publicId = pathinfo($caregiver->photo, PATHINFO_FILENAME);
+                Cloudinary::destroy($publicId);
+            }
+
+            $imageUrl = Cloudinary::upload($request->file('photo')->getRealPath(), [
+                "folder" => "caregivers"
+            ])->getSecurePath();
             $caregiver->photo = $imageUrl;
         }
 
@@ -107,6 +110,25 @@ class CaregiverController extends Controller
 
         return response()->json([
             "data" => new CaregiverResource($caregiver)
+        ]);
+    }
+
+    public function delete(Request $request)
+    {
+        $caregiver = $request->user();
+
+        if ($caregiver->photo) {
+            $publicId = pathinfo($caregiver->photo, PATHINFO_FILENAME);
+            Cloudinary::destroy($publicId);
+        }
+
+        $caregiver->delete();
+
+        // Delete All Tokens
+        $caregiver->tokens()->delete();
+
+        return response()->json([
+            "message" => "Caregiver deleted successfully"
         ]);
     }
 
@@ -226,7 +248,7 @@ class CaregiverController extends Controller
         }
 
         $request->user()->patients()->attach($patient);
-        
+
         // Follow Notification
         // $patient->notify(new FollowNotification("Caregiver " . $request->user()->name . " is now following you"));
 
@@ -250,18 +272,18 @@ class CaregiverController extends Controller
         }
 
         // Check if Caregiver already unfollowing the patient
-        if(!$request->user()->patients()->find($id)) {
+        if (!$request->user()->patients()->find($id)) {
             return response()->json([
                 "errors" => [
                     "message" => "Caregiver already unfollowing the patient"
                 ]
             ], 400);
         }
-            
+
         $request->user()->patients()->detach($patient);
         // Unfollow Notification
         // $patient->notify(new FollowNotification("Caregiver " . $request->user()->name . " is now unfollowing you"));
-        
+
         return response()->json([
             "message" => "Patient unfollowed successfully"
         ]);

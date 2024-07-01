@@ -18,10 +18,10 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 
-Broadcast::channel('chat.{patient_id}.{caregiver_id}', function ($user, $patient_id, $caregiver_id) {
+Broadcast::channel('private-chat.{sender_id}.{receiver_id}', function ($user, $sender_id, $receiver_id) {
     // Implement your logic to determine if the user is authorized to listen to this channel.
     // For example, check if the user is either the patient or the caregiver involved in the chat.
-    return $user->id === (int) $patient_id || $user->id === (int) $caregiver_id;
+    return $user->id === (int) $sender_id || $user->id === (int) $receiver_id;
 });
 
 Broadcast::channel('fallyguard-notify', function ($user) {

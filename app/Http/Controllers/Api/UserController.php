@@ -9,20 +9,22 @@ use App\Http\Resources\User\UserResource;
 use App\Models\User;
 
 use App\Services\AuthService;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     private $authService;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->middleware('role:patient', [
             'only' => ['me', 'update']
         ]);
-        
+
         $this->authService = new AuthService(new User());
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -40,7 +42,8 @@ class UserController extends Controller
         return $this->authService->register($request);
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         // Login User
         return $this->authService->login($request);
     }
@@ -86,43 +89,60 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
-        // Update User Profile
-        $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            "family_name" => "sometimes|required|string|max:255",
-            'email' => 'sometimes|required|email|unique:users,email',
-            "date_of_birth" => "sometimes|required|date",
-            'phone' => 'sometimes|required|string|max:255',
-            "country" => "sometimes|required|string|max:255",
-            'address' => 'sometimes|required|string|max:255',
-            'photo' => 'sometimes|required|file|max:255',
-        ]);
+        $validated = $request->validate($request->user()->updateValidators());
 
-        foreach($request->all() as $key => $value) {
-            if ($key !== 'photo')
-                $user->{$key} = $value;
-        }
+        $patient = $request->user();
+
+        $patient->fill($validated);
 
         if ($request->hasFile('photo')) {
-            $user->photo = $request->file('photo')->store('photos');
+            // First delete the old photo from cloudinary
+            // Why this error: "Missing required parameter - public_id?
+            // - The error is because the photo field is empty, so it's trying to delete a photo that doesn't exist
+
+            if ($patient->photo) {
+                $publicId = pathinfo($patient->photo, PATHINFO_FILENAME);
+                Cloudinary::destroy($publicId);
+            }
+
+            $imageUrl = Cloudinary::upload($request->file('photo')->getRealPath(), [
+                "folder" => "patients"
+            ])->getSecurePath();
+
+            $patient->photo = $imageUrl;
         }
 
-        if ($user->isDirty()) {
-            $user->save();
-            return response()->json(new UserResource($user), 200);
-        }else {
-            return response()->json([
-                "errors" => [
-                    "message" => "No changes detected"
-                ]
-            ], 422);
+        $patient->save();
+
+        return response()->json([
+            "data" => new UserResource($patient)
+        ]);
+    }
+
+    public function delete(Request $request)
+    {
+        $patient = $request->user();
+
+        if ($patient->photo) {
+            $publicId = pathinfo($patient->photo, PATHINFO_FILENAME);
+            Cloudinary::destroy($publicId);
         }
+
+        $patient->delete();
+
+        // Delete All Tokens
+        $patient->tokens()->delete();
+
+        return response()->json([
+            "message" => "Patient deleted successfully"
+        ]);
     }
 
     // Get all contacts for a user
-    public function contacts(Request $request, string $id) {
+    public function contacts(Request $request, string $id)
+    {
         $user = User::findOrFail($id);
         return response()->json([
             'user_id' => $user->id,
@@ -131,10 +151,11 @@ class UserController extends Controller
     }
 
     // Get Single Contact
-    public function contact(Request $request, string $id, string $contact_id) {
+    public function contact(Request $request, string $id, string $contact_id)
+    {
         $user = User::findOrFail($id);
         $contact = $user->contacts()->findOrFail($contact_id);
-        
+
         return response()->json([
             'user_id' => $user->id,
             "data" => $contact
@@ -142,7 +163,8 @@ class UserController extends Controller
     }
 
     // Get falls for a user
-    public function falls(Request $request, string $id) {
+    public function falls(Request $request, string $id)
+    {
         $user = User::findOrFail($id);
 
         return response()->json([
@@ -151,7 +173,8 @@ class UserController extends Controller
     }
 
     // Get Single Patient
-    public function show(Request $request, string $id) {
+    public function show(Request $request, string $id)
+    {
         $user = User::findOrFail($id);
         // return $request->query('deep');
 
@@ -216,7 +239,7 @@ class UserController extends Controller
     //             ]
     //         ], 400);
     //     }
-            
+
     //     $request->user()->patients()->detach($patient);
 
     //     return response()->json([

@@ -4,7 +4,6 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -39,11 +38,11 @@ class SentMessage implements ShouldBroadcast
      */
     public function broadcastOn(): Channel
     {
-        return new PrivateChannel("chat.{$this->sender->id}.{$this->receiver->id}");
+        return new Channel("chat-channel");
     }
 
     public function broadcastAs(): string
     {
-        return 'message-sent';
+        return 'chat-event';
     }
 }
