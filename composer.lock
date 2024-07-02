@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "868b1829e0b1569d81c8bb6e93611596",
+    "content-hash": "85f285deb85dbe534a250d73a021e6a7",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -6868,6 +6868,59 @@
             "time": "2023-12-08T13:03:43+00:00"
         },
         {
+            "name": "twilio/sdk",
+            "version": "8.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twilio/twilio-php.git",
+                "reference": "10dbd6ecbc6ac1e0c61ab7d70c44e0794f8d3a1f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twilio/twilio-php/zipball/10dbd6ecbc6ac1e0c61ab7d70c44e0794f8d3a1f",
+                "reference": "10dbd6ecbc6ac1e0c61ab7d70c44e0794f8d3a1f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^6.3 || ^7.0",
+                "phpunit/phpunit": ">=7.0 < 10"
+            },
+            "suggest": {
+                "guzzlehttp/guzzle": "An HTTP client to execute the API requests"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Twilio\\": "src/Twilio/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Twilio API Team",
+                    "email": "api@twilio.com"
+                }
+            ],
+            "description": "A PHP wrapper for Twilio's API",
+            "homepage": "https://github.com/twilio/twilio-php",
+            "keywords": [
+                "api",
+                "sms",
+                "twilio"
+            ],
+            "support": {
+                "issues": "https://github.com/twilio/twilio-php/issues",
+                "source": "https://github.com/twilio/twilio-php/tree/8.2.2"
+            },
+            "time": "2024-07-02T09:32:09+00:00"
+        },
+        {
             "name": "tymon/jwt-auth",
             "version": "2.0.0",
             "source": {
@@ -7108,6 +7161,65 @@
                 }
             ],
             "time": "2022-03-08T17:03:00+00:00"
+        },
+        {
+            "name": "vonage/client",
+            "version": "4.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Vonage/vonage-php-sdk.git",
+                "reference": "9a21c83fee90e5da410146b965383bebccfc93b0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Vonage/vonage-php-sdk/zipball/9a21c83fee90e5da410146b965383bebccfc93b0",
+                "reference": "9a21c83fee90e5da410146b965383bebccfc93b0",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.0",
+                "php": "~8.0 || ~8.1 || ~8.2",
+                "vonage/client-core": "^4.0"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Seconde",
+                    "email": "jim.seconde@vonage.com",
+                    "role": "PHP Developer Advocate"
+                },
+                {
+                    "name": "Tim Lytle",
+                    "homepage": "https://twitter.com/tjlytle",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Michael Heap",
+                    "homepage": "https://www.twitter.com/mheap",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Lorna Mitchell",
+                    "homepage": "https://lornajane.net/",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Chris Tankersley",
+                    "homepage": "https://twitter.com/dragonmantank",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP Client for using Vonage's API.",
+            "support": {
+                "email": "devrel@vonage.com",
+                "issues": "https://github.com/Vonage/vonage-php-sdk/issues",
+                "source": "https://github.com/Vonage/vonage-php-sdk/tree/4.0.0"
+            },
+            "time": "2023-01-16T11:02:48+00:00"
         },
         {
             "name": "vonage/client-core",

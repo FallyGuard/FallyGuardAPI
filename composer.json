@@ -17,7 +17,9 @@
         "laravel/vonage-notification-channel": "^3.3",
         "mastani/laravel-google-static-map": "^2.4",
         "pusher/pusher-php-server": "^7.2",
-        "tymon/jwt-auth": "*"
+        "twilio/sdk": "^8.2",
+        "tymon/jwt-auth": "*",
+        "vonage/client": "^4.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

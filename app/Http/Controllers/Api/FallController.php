@@ -6,17 +6,18 @@ use App\Events\PushNotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Fall;
 use App\Notifications\FallDetectNotification;
-use App\Notifications\FollowNotification;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\DB;
 use Mastani\GoogleStaticMap\GoogleStaticMap as StaticMap;
-
+use App\Services\PhoneService;
 
 class FallController extends Controller
 {
+    public $phoneService;
     public function __construct()
     {
+        $this->phoneService = new PhoneService();
         $this->middleware('role:patient', ['except' => ['index', 'show', "user"]]);
     }
     /**
@@ -61,10 +62,9 @@ class FallController extends Controller
         $fall = Fall::where('user_id', $request->user()->id)
             ->where('location', $request->location)
             ->where('latitude', $request->latitude)
-            ->where('longitude', $request->longitude)
-            ->first();
+            ->where('longitude', $request->longitude);
 
-        if ($fall) {
+        if ($fall->exists()) {
             // notify the patient that the fall is already registered
             // avoiding duplicate fall events
             return response()->setStatusCode(204);
@@ -82,6 +82,13 @@ class FallController extends Controller
             'severity' => $request->severity,
         ]));
 
+        // Send SMS to all the contacts
+        $contacts = $request->user()->contacts;
+        foreach ($contacts as $contact) {
+            // $this->phoneService->sendSMS($request->user(), $contact);
+            $this->phoneService->sendToWhatsapp($request->user(), $contact);
+        }
+
         // Store Fall Notification
         DB::insert('insert into notification (user_id, type, title, content, created_at, updated_at) values (?, ?, ?, ?, ?, ?)', [
             $request->user()->id,
@@ -94,6 +101,7 @@ class FallController extends Controller
 
         // test (worked)
         // event(new FollowNotification("He is Following you."));
+
 
         return Fall::create([
             ...$request->all(),
