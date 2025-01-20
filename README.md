@@ -43,7 +43,8 @@ A Laravel-based application designed to detect falls in real-time and notify car
    npm run dev
    ```
 
-## 📡 API Documentation  
+## 📡 API Documentation
+https://documenter.getpostman.com/view/23054100/2sA2rGtJj7
 
 ## 📸 Screenshots  
 ![Dashboard Preview](![image](https://github.com/user-attachments/assets/e96a1bdd-a30d-49af-8d04-0eefd885578d))
